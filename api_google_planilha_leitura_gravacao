@@ -28,6 +28,8 @@ function doGet(e) {
     return Delete(e);
   }
 }
+
+
 function Create(e) {
 
   var json = JSON.stringify(e.parameter);
@@ -35,10 +37,11 @@ function Create(e) {
 
   //ETAPA 3/4*******Configurar a sequencia das colunas *****
 
-  sheet.appendRow([dados.nome, dados.telefone, dados.email, dados.salario]);
+  sheet.appendRow([dados.id_registro, dados.nome, dados.telefone, dados.email, dados.salario]);
 
   return ContentService.createTextOutput([json]).setMimeType(ContentService.MimeType.JSON);
 }
+
 function Read(e) {
   var rows = sheet.getRange(2, 1, sheet.getLastRow() - 1, sheet.getLastColumn()).getValues();
   
@@ -50,11 +53,12 @@ function Read(e) {
     var record = {};
 
     //ETAPA 4/4*****Edite a linha abaixo com os nomes da colunas que deseja*****
-
-    record['Nome'] = row[0];
-    record['Telefone'] = row[1];
-    record['Email'] = row[2];
-    record['Salario'] = row[3];
+    
+    record['id_registro'] = row[0]
+    record['Nome'] = row[1];
+    record['Telefone'] = row[2];
+    record['Email'] = row[3];
+    record['Salario'] = row[4];
     
 
     data.push(record);
@@ -66,9 +70,47 @@ function Read(e) {
 }
 
 function Update(e) {
-  /// Em desenvolvimento
-}
+
+    var json = JSON.stringify(e.parameter);
+    var dados = JSON.parse(json);
+
+    var id_registro = dados.id_registro;
+    var rows = sheet.getDataRange();
+    var numRows = rows.getNumRows();
+    var values = rows.getValues();
+
+    for (var i = 1; i < numRows; i++) {
+      var row = values[i];
+
+      if (row[0] == id_registro) {
+        row[1] = dados.Nome;
+        row[2] = dados.Telefone;
+        row[3] = dados.Email;
+        row[4] = dados.Salario;
+        break;
+      }
+    }
+
+    var newRange = sheet.getRange(1, 1, numRows, values[0].length);
+    newRange.setValues(values);
+
+    return ContentService.createTextOutput([json]).setMimeType(ContentService.MimeType.JSON);
+  }
 
 function Delete(e) {
-  /// Em desenvolvimento
-}
+    var id_registro = e.parameter.id_registro;
+
+    var rows = sheet.getDataRange().getValues();
+
+    for (var i = 0; i < rows.length; i++) {
+      var row = rows[i];
+      if (row[0] == id_registro) {
+        sheet.deleteRow(i+1);
+        break;
+      }
+    }
+
+    return ContentService.createTextOutput("Data deleted successfully.").setMimeType(ContentService.MimeType.TEXT);
+  }
+ 
+ }
